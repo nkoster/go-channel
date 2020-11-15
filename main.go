@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func main() {
@@ -22,19 +23,24 @@ func main() {
 		go checkLink(link, c)
 	}
 
-	for {
-		go checkLink(<-c, c)
+	// for {
+	// 	go checkLink(<-c, c)
+	// }
+
+	for link := range c {
+		go checkLink(link, c)
 	}
 
 }
 
 func checkLink(link string, c chan string) {
+	time.Sleep(2 * time.Second)
 	resp, err := http.Get(link)
 	if err != nil {
 		c <- link
 		return
 	}
-	bytesRead, err := io.Copy(ioutil.Discard, resp.Body)
-	fmt.Println(link, "Bytes", bytesRead, err)
+	bytesRead, _ := io.Copy(ioutil.Discard, resp.Body)
+	fmt.Println(link, "Bytes", bytesRead)
 	c <- link
 }
